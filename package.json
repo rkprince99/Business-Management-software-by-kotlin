@@ -1,16 +1,48 @@
 {
-  "name": "erp-backend",
-  "version": "0.1.0",
-  "private": true,
-  "main": "index.js",
+  "name": "color-convert",
+  "description": "Plain color conversion functions",
+  "version": "2.0.1",
+  "author": "Heather Arthur <fayearthur@gmail.com>",
+  "license": "MIT",
+  "repository": "Qix-/color-convert",
   "scripts": {
-    "start": "node index.js"
+    "pretest": "xo",
+    "test": "node test/basic.js"
+  },
+  "engines": {
+    "node": ">=7.0.0"
+  },
+  "keywords": [
+    "color",
+    "colour",
+    "convert",
+    "converter",
+    "conversion",
+    "rgb",
+    "hsl",
+    "hsv",
+    "hwb",
+    "cmyk",
+    "ansi",
+    "ansi16"
+  ],
+  "files": [
+    "index.js",
+    "conversions.js",
+    "route.js"
+  ],
+  "xo": {
+    "rules": {
+      "default-case": 0,
+      "no-inline-comments": 0,
+      "operator-linebreak": 0
+    }
+  },
+  "devDependencies": {
+    "chalk": "^2.4.2",
+    "xo": "^0.24.0"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.11.7",
-    "@grpc/proto-loader": "^0.7.5",
-    "bcrypt": "^5.1.0",
-    "mongodb": "^5.9.0",
-    "uuid": "^9.0.0"
+    "color-name": "~1.1.4"
   }
 }
