@@ -1,28 +1,147 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-buildscript {
-    ext {
-        kotlin_version = "1.9.22"
-        compose_compiler_version = "1.5.10"
-        hilt_version = "2.50"
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'dagger.hilt.android.plugin'
+
+// Production API (HTTPS on Render). Must end with / for Retrofit.
+def productionApiBaseUrl = "https://erp-app-backend-3.onrender.com/api/"
+//
+// Override for local NestJS (optional) in project-root local.properties (gitignored):
+//   dev.api.base.url=http://10.0.2.2:3001/api/          // emulator → PC localhost
+//   dev.api.base.url=http://YOUR_LAN_IP:3001/api/      // phone on Wi‑Fi
+//   dev.api.base.url=http://127.0.0.1:3001/api/        // phone + USB + adb reverse tcp:3001 tcp:3001
+def localProps = new Properties()
+def lpFile = rootProject.file("local.properties")
+if (lpFile.exists()) {
+    lpFile.withInputStream { localProps.load(it) }
+}
+def devApiOverride = (localProps.getProperty("dev.api.base.url", "") ?: "").trim()
+def debugApiBaseUrl = devApiOverride.isEmpty() ? productionApiBaseUrl : devApiOverride
+
+android {
+    namespace "com.wiradata.erpapplication"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.wiradata.erpapplication"
+        minSdk 24
+        targetSdk 34
+        versionCode 2
+        versionName "2.0.0"
+
+        vectorDrawables { useSupportLibrary true }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-    repositories {
-        google()
-        mavenCentral()
+
+    buildTypes {
+        // Default: hosted API on Render. Override with dev.api.base.url in local.properties for local PC.
+        debug {
+            buildConfigField "String", "API_BASE_URL", "\"${debugApiBaseUrl}\""
+        }
+        // Alternate variant: fixed LAN URL without editing local.properties (change IP to match your PC).
+        debugPhone {
+            initWith debug
+            matchingFallbacks = ['debug']
+            buildConfigField "String", "API_BASE_URL", "\"http://192.168.0.102:3001/api/\""
+        }
+        // Phone on USB after: adb reverse tcp:3001 tcp:3001  (app must use 127.0.0.1, not 10.0.2.2)
+        debugUsb {
+            initWith debug
+            matchingFallbacks = ['debug']
+            buildConfigField "String", "API_BASE_URL", "\"http://127.0.0.1:3001/api/\""
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "API_BASE_URL", "\"${productionApiBaseUrl}\""
+        }
     }
-    dependencies {
-        classpath "com.android.tools.build:gradle:8.2.2"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
+
+    buildFeatures {
+        compose true
+        buildConfig true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion compose_compiler_version
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/INDEX.LIST"
+            excludes += "META-INF/DEPENDENCIES"
+        }
     }
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+dependencies {
+    // ── Kotlin / Core
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "androidx.core:core-ktx:1.12.0"
+    implementation "androidx.appcompat:appcompat:1.6.1"
 
-tasks.register('clean', Delete) {
-    delete rootProject.buildDir
+    // ── Coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+
+    // ── Lifecycle / ViewModel
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.7.0"
+
+    // ── Activity Compose
+    implementation "androidx.activity:activity-compose:1.8.2"
+
+    // ── Compose BOM + Material 3
+    implementation platform('androidx.compose:compose-bom:2024.04.00')
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.foundation:foundation"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.material:material-icons-extended"
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
+
+    // ── Navigation Compose
+    implementation "androidx.navigation:navigation-compose:2.7.7"
+    implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
+
+    // ── Hilt
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+
+    // ── Retrofit / OkHttp / Moshi
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-moshi:2.9.0"
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.12.0"
+    implementation "com.squareup.moshi:moshi:1.15.1"
+    implementation "com.squareup.moshi:moshi-kotlin:1.15.1"
+    implementation "com.squareup.moshi:moshi-adapters:1.15.1"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:1.15.1"
+
+    // ── DataStore (encrypted-token-friendly)
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation "androidx.security:security-crypto:1.1.0-alpha06"
+
+    // ── Image loading
+    implementation "io.coil-kt:coil-compose:2.6.0"
+
+    // ── Tests
+    testImplementation "junit:junit:4.13.2"
+    androidTestImplementation "androidx.test.ext:junit:1.1.5"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestImplementation platform('androidx.compose:compose-bom:2024.04.00')
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
 }
