@@ -1,48 +1,44 @@
 {
-  "name": "color-convert",
-  "description": "Plain color conversion functions",
-  "version": "2.0.1",
-  "author": "Heather Arthur <fayearthur@gmail.com>",
-  "license": "MIT",
-  "repository": "Qix-/color-convert",
-  "scripts": {
-    "pretest": "xo",
-    "test": "node test/basic.js"
-  },
-  "engines": {
-    "node": ">=7.0.0"
-  },
+  "name": "mkdirp",
+  "description": "Recursively mkdir, like `mkdir -p`",
+  "version": "1.0.4",
+  "main": "index.js",
   "keywords": [
-    "color",
-    "colour",
-    "convert",
-    "converter",
-    "conversion",
-    "rgb",
-    "hsl",
-    "hsv",
-    "hwb",
-    "cmyk",
-    "ansi",
-    "ansi16"
+    "mkdir",
+    "directory",
+    "make dir",
+    "make",
+    "dir",
+    "recursive",
+    "native"
   ],
-  "files": [
-    "index.js",
-    "conversions.js",
-    "route.js"
-  ],
-  "xo": {
-    "rules": {
-      "default-case": 0,
-      "no-inline-comments": 0,
-      "operator-linebreak": 0
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/isaacs/node-mkdirp.git"
+  },
+  "scripts": {
+    "test": "tap",
+    "snap": "tap",
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "postpublish": "git push origin --follow-tags"
+  },
+  "tap": {
+    "check-coverage": true,
+    "coverage-map": "map.js"
   },
   "devDependencies": {
-    "chalk": "^2.4.2",
-    "xo": "^0.24.0"
+    "require-inject": "^1.4.4",
+    "tap": "^14.10.7"
   },
-  "dependencies": {
-    "color-name": "~1.1.4"
-  }
+  "bin": "bin/cmd.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "index.js"
+  ]
 }
