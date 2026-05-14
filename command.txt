@@ -1,0 +1,20 @@
+
+this command for Android Stidio for app connect :
+
+cd /Users/mdrakibhossain/Downloads/erp-application
+
+./gradlew :app:installDebug
+
+./gradlew :app:installDebugUsb
+
+./gradlew clean assembleDebug
+
+~/Library/Android/sdk/platform-tools/adb reverse --list
+
+~/Library/Android/sdk/platform-tools/adb reverse tcp:3001 tcp:3001
+
+
+1st need backend start run this command:
+
+cd /Users/mdrakibhossain/Downloads/erp-application/erp_rakib-main/backend
+npm run start:dev
